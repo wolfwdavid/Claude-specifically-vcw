@@ -1,20 +1,19 @@
-"""Closed-loop agent runner that uses Claude to choose among retrieved tools.
+"""Closed-loop agent runner that uses a chat backend to choose among
+retrieved tools.
 
-The retriever narrows the 100K catalog down to ``k`` candidates. The agent's
-job is to pick which one (if any) actually solves the user's task. This is
-the regime Cowork lives in: retrieval is the upstream cheap step; the model
-is the downstream decision-maker.
-
-The runner is intentionally thin. It does not execute the chosen tool — it
-emits a structured selection so the harness can score it against the gold
-label. Tool execution belongs in a separate layer.
+Despite the historical name, the runner is backend-agnostic: pass any
+``vcw_backends`` spec string (``anthropic:...``, ``ollama:...``,
+``gemini:...``, ``groq:...``). The retriever narrows the 100K catalog down
+to ``k`` candidates; the model's job is to pick which one (if any)
+actually solves the user's task.
 """
 
 from __future__ import annotations
 
 import json
-import os
 from dataclasses import dataclass
+
+from vcw_backends import Backend, make_backend
 
 from ..retrievers.base import Hit
 
@@ -51,30 +50,22 @@ def _format_candidates(hits: list[Hit]) -> str:
 
 
 class ClaudeAgentRunner:
+    """Historical class name retained; works with any vcw_backends provider."""
+
     def __init__(
         self,
-        model: str = "claude-sonnet-4-6",
+        target: str | Backend = "anthropic:claude-sonnet-4-6",
         max_tokens: int = 256,
-        api_key: str | None = None,
     ):
-        from anthropic import Anthropic
-
-        self.model = model
         self.max_tokens = max_tokens
-        self.client = Anthropic(api_key=api_key or os.environ.get("ANTHROPIC_API_KEY"))
+        self.backend: Backend = target if isinstance(target, Backend) else make_backend(target)
 
     def select(self, task_query: str, hits: list[Hit]) -> AgentResult:
         user_msg = (
             f"Task: {task_query}\n\nCandidate tools:\n{_format_candidates(hits)}\n\n"
             "Choose the best tool."
         )
-        resp = self.client.messages.create(
-            model=self.model,
-            max_tokens=self.max_tokens,
-            system=SYSTEM_PROMPT,
-            messages=[{"role": "user", "content": user_msg}],
-        )
-        text = "".join(b.text for b in resp.content if getattr(b, "type", "") == "text").strip()
+        text = self.backend.chat(SYSTEM_PROMPT, user_msg, max_tokens=self.max_tokens).strip()
         try:
             payload = json.loads(text)
             return AgentResult(

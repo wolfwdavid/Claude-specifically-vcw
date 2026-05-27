@@ -53,9 +53,9 @@ class PlainLanguage(Dimension):
         "budget."
     )
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, judge: str | None = None, **kwargs):
         super().__init__(*args, **kwargs)
-        self._judge = Judge(api_key=kwargs.get("api_key"))
+        self._judge = Judge(judge or "anthropic:claude-sonnet-4-6")
 
     def evaluate_case(self, case: dict) -> CaseResult:
         user = f"[User context: {case['context']}]\n\n{case['prompt']}"

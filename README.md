@@ -11,6 +11,11 @@ self-contained projects in this repo:
    handling, accessibility-aware tool selection). See
    [`cowork_a11y_eval/README.md`](cowork_a11y_eval/README.md).
 
+Both projects share a pluggable backend layer (`vcw_backends/`) so the
+harness runs against Anthropic, Ollama (local), Gemini (free tier), or
+Groq (free tier) with a single flag. See [`FREE_PATH.md`](FREE_PATH.md)
+to run everything at $0.
+
 ---
 
 # Tool Retrieval at 100K Scale

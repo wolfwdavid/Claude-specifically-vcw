@@ -1,18 +1,20 @@
 """Dimension protocol — one accessibility-relevant axis to evaluate on.
 
 Every dimension owns its case file, knows how to call the model-under-test
-on each case, and knows how to score the response. Dimensions return a
-homogeneous ``DimensionSummary`` so the runner can produce a clean table.
+on each case (via a pluggable backend), and knows how to score the response.
+Dimensions return a homogeneous ``DimensionSummary`` so the runner can
+produce a clean table.
 """
 
 from __future__ import annotations
 
 import json
-import os
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field, asdict
 from pathlib import Path
 from typing import Any, Iterable
+
+from vcw_backends import Backend, make_backend
 
 
 @dataclass
@@ -45,11 +47,12 @@ class Dimension(ABC):
     name: str = "base"
     cases_filename: str = ""
 
-    def __init__(self, target_model: str = "claude-sonnet-4-6", api_key: str | None = None):
-        from anthropic import Anthropic
-
-        self.target_model = target_model
-        self.client = Anthropic(api_key=api_key or os.environ.get("ANTHROPIC_API_KEY"))
+    def __init__(
+        self,
+        target: str | Backend = "anthropic:claude-sonnet-4-6",
+        **backend_kwargs,
+    ):
+        self.target: Backend = target if isinstance(target, Backend) else make_backend(target, **backend_kwargs)
 
     def cases(self) -> Iterable[dict]:
         path = Path(__file__).parent.parent / "cases" / self.cases_filename
@@ -60,13 +63,7 @@ class Dimension(ABC):
                     yield json.loads(line)
 
     def call_target(self, system: str, user: str, max_tokens: int = 800) -> str:
-        resp = self.client.messages.create(
-            model=self.target_model,
-            max_tokens=max_tokens,
-            system=system,
-            messages=[{"role": "user", "content": user}],
-        )
-        return "".join(b.text for b in resp.content if getattr(b, "type", "") == "text").strip()
+        return self.target.chat(system, user, max_tokens=max_tokens)
 
     @abstractmethod
     def evaluate_case(self, case: dict) -> CaseResult:

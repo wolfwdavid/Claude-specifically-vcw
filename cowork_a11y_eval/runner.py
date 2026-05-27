@@ -11,7 +11,8 @@ from .dimensions import ALL_DIMENSIONS, Dimension, DimensionSummary
 
 
 def run_all(
-    target_model: str = "claude-sonnet-4-6",
+    target: str = "anthropic:claude-sonnet-4-6",
+    judge: str = "anthropic:claude-sonnet-4-6",
     dimensions: list[type[Dimension]] | None = None,
     out_path: str | Path | None = None,
 ) -> list[DimensionSummary]:
@@ -19,7 +20,11 @@ def run_all(
     summaries: list[DimensionSummary] = []
     for dim_cls in dimensions:
         t0 = time.time()
-        dim = dim_cls(target_model=target_model)
+        # Dimensions that take a judge accept it as a kwarg; others ignore it.
+        try:
+            dim = dim_cls(target=target, judge=judge)
+        except TypeError:
+            dim = dim_cls(target=target)
         s = dim.run()
         elapsed = time.time() - t0
         print(
@@ -33,7 +38,8 @@ def run_all(
         with open(out_path, "w", encoding="utf-8") as f:
             json.dump(
                 {
-                    "target_model": target_model,
+                    "target": target,
+                    "judge": judge,
                     "summaries": [
                         {
                             "name": s.name,

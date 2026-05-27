@@ -110,9 +110,13 @@ def retrieve_cmd(registry: str, retriever: str, tasks: str | None, k: int, out: 
 @click.option("--retriever", default="hierarchical", type=click.Choice(["bm25", "dense", "hierarchical"]))
 @click.option("--tasks", default=None)
 @click.option("--k", default=20, type=int)
-@click.option("--model", default="claude-sonnet-4-6")
+@click.option(
+    "--target",
+    default="anthropic:claude-sonnet-4-6",
+    help="Backend spec (anthropic:..., ollama:..., gemini:..., groq:...).",
+)
 @click.option("--out", default=None)
-def agent_cmd(registry: str, retriever: str, tasks: str | None, k: int, model: str, out: str | None) -> None:
+def agent_cmd(registry: str, retriever: str, tasks: str | None, k: int, target: str, out: str | None) -> None:
     from .agent import ClaudeAgentRunner
 
     reg = _load_registry(registry)
@@ -121,7 +125,7 @@ def agent_cmd(registry: str, retriever: str, tasks: str | None, k: int, model: s
 
     raw_tasks = load_tasks(tasks)
     valid = filter_to_registry(raw_tasks, reg)
-    agent = ClaudeAgentRunner(model=model)
+    agent = ClaudeAgentRunner(target=target)
 
     rows = []
     n_correct = 0
@@ -145,7 +149,7 @@ def agent_cmd(registry: str, retriever: str, tasks: str | None, k: int, model: s
     acc = n_correct / len(valid) if valid else 0.0
     summary = {
         "retriever": retriever,
-        "model": model,
+        "target": target,
         "k": k,
         "registry_size": len(reg),
         "n_tasks": len(valid),

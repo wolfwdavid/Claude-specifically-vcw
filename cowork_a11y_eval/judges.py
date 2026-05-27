@@ -1,43 +1,33 @@
-"""Claude-as-judge utilities.
+"""Pluggable judge utilities.
 
-Each judge function takes the model-under-test response plus case-specific
-inputs and returns a structured ``Judgment``. Judges are deliberately
-narrow: one rubric per dimension, JSON output, no chain-of-thought in the
-final answer. This keeps the judge cheap and the failure modes legible.
+A judge is just another chat backend with a structured rubric on top. The
+judge backend is independent of the target backend so you can run a free
+target (Ollama, Gemini, Groq) against a Claude judge — keeping judge
+quality high while target inference stays free.
 """
 
 from __future__ import annotations
 
 import json
-import os
 from dataclasses import dataclass
 
-JUDGE_MODEL_DEFAULT = "claude-sonnet-4-6"
+from vcw_backends import Backend, make_backend
 
 
 @dataclass
 class Judgment:
-    score: float          # 0.0 .. 1.0
+    score: float
     pass_: bool
     rationale: str
     raw: str
 
 
 class Judge:
-    def __init__(self, model: str = JUDGE_MODEL_DEFAULT, api_key: str | None = None):
-        from anthropic import Anthropic
-
-        self.model = model
-        self.client = Anthropic(api_key=api_key or os.environ.get("ANTHROPIC_API_KEY"))
+    def __init__(self, judge: str | Backend = "anthropic:claude-sonnet-4-6", **backend_kwargs):
+        self.backend: Backend = judge if isinstance(judge, Backend) else make_backend(judge, **backend_kwargs)
 
     def _call(self, system: str, user: str, max_tokens: int = 400) -> str:
-        resp = self.client.messages.create(
-            model=self.model,
-            max_tokens=max_tokens,
-            system=system,
-            messages=[{"role": "user", "content": user}],
-        )
-        return "".join(b.text for b in resp.content if getattr(b, "type", "") == "text").strip()
+        return self.backend.chat(system, user, max_tokens=max_tokens)
 
     def _parse(self, text: str) -> Judgment:
         try:
