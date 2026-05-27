@@ -1,3 +1,18 @@
+# Claude-specifically-vcw
+
+Research-engineering work on virtual collaborator systems. Two
+self-contained projects in this repo:
+
+1. **[`tool_retrieval_100k/`](tool_retrieval_100k/)** — benchmark + research note for
+   LLM agent tool retrieval over a 100K-entry catalog. *Below.*
+2. **[`cowork_a11y_eval/`](cowork_a11y_eval/)** — hand-curated accessibility eval pack
+   for virtual collaborator agents across six dimensions (screen-reader
+   format, modality awareness, plain language, refusal parity, AAC
+   handling, accessibility-aware tool selection). See
+   [`cowork_a11y_eval/README.md`](cowork_a11y_eval/README.md).
+
+---
+
 # Tool Retrieval at 100K Scale
 
 A benchmark and research harness for studying how an LLM agent should

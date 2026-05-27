@@ -18,6 +18,7 @@ dev = ["pytest>=8.0", "ruff>=0.5"]
 
 [project.scripts]
 trbench = "tool_retrieval_100k.cli:main"
+a11yeval = "cowork_a11y_eval.cli:main"
 
 [build-system]
 requires = ["setuptools>=68"]
@@ -25,4 +26,4 @@ build-backend = "setuptools.build_meta"
 
 [tool.setuptools.packages.find]
 where = ["."]
-include = ["tool_retrieval_100k*"]
+include = ["tool_retrieval_100k*", "cowork_a11y_eval*"]
