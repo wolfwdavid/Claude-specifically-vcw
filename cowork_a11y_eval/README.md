@@ -100,12 +100,30 @@ Harness is runnable end-to-end. **First empirical run completed
 | aac_handling | 80.00% | 10 |
 | tool_a11y_preference | 100.00% | 10 |
 
-Target and judge: `groq:llama-3.3-70b-versatile`. The judge is the *same
-model* as the target, which is known to be lenient — these numbers are a
-baseline that the harness works, not a quality claim. Full writeup and
-caveats: [`../results/a11y_groq_llama33-70b_SUMMARY.md`](../results/a11y_groq_llama33-70b_SUMMARY.md).
+Target and judge: `groq:llama-3.3-70b-versatile` (self-judged).
 
-The next run that matters is the same target judged by Claude (removes
-the self-judge confound) and then a multi-model comparison via
-`a11yeval-compare`. See `METHODOLOGY.md` for limitations and scoring
-caveats before reporting numbers anywhere.
+A second run on a small local model (`lmstudio:llama-3.2-3b-instruct`,
+$0, no API key) produced the project's most useful finding so far:
+
+| Dimension | Llama 3.3 70B (Groq) | Llama 3.2 3B (local) |
+|---|---|---|
+| screenreader_format | 80% | 80% |
+| modality_awareness | 90% | 20% |
+| plain_language | 100% | 10% |
+| refusal_parity | 100% | 75% |
+| aac_handling | 80% | 0%* |
+| tool_a11y_preference | 100% | 80% |
+
+Both runs are **self-judged**, and they fail in opposite directions: the
+70B model is too lenient on itself, while the 3B model often can't emit
+valid judge JSON at all (8 of its 66 cases scored 0 purely because the
+judge output was unparseable — the `0%*` on aac_handling is partly this
+artifact, not pure capability). Self-judging breaks both ways, which is
+the empirical argument for fixing a capable judge independent of the
+target. Writeups:
+[70B](../results/a11y_groq_llama33-70b_SUMMARY.md) ·
+[3B](../results/a11y_lmstudio_llama32-3b_SUMMARY.md).
+
+The next run that matters is both targets judged by Claude (removes the
+self-judge confound). See `METHODOLOGY.md` for limitations before
+reporting numbers anywhere.
