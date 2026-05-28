@@ -61,3 +61,14 @@ def test_make_groq_errors_without_key(monkeypatch):
     monkeypatch.delenv("GROQ_API_KEY", raising=False)
     with pytest.raises(BackendError):
         make_backend("groq:llama-3.1-70b-versatile")
+
+
+def test_parse_lmstudio():
+    assert parse_spec("lmstudio:llama-3.2-3b-instruct") == ("lmstudio", "llama-3.2-3b-instruct")
+
+
+def test_make_lmstudio_no_key_required(monkeypatch):
+    monkeypatch.delenv("LMSTUDIO_BASE_URL", raising=False)
+    b = make_backend("lmstudio:llama-3.2-3b-instruct")
+    assert b.model == "llama-3.2-3b-instruct"
+    assert b.base_url.startswith("http")

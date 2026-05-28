@@ -12,7 +12,7 @@ from __future__ import annotations
 
 from .base import Backend, BackendError
 
-_PROVIDERS = {"anthropic", "ollama", "gemini", "groq"}
+_PROVIDERS = {"anthropic", "ollama", "gemini", "groq", "lmstudio"}
 
 
 def parse_spec(spec: str) -> tuple[str, str]:
@@ -43,4 +43,8 @@ def make_backend(spec: str, **kwargs) -> Backend:
         from .groq_backend import GroqBackend
 
         return GroqBackend(model=model, **kwargs)
+    if provider == "lmstudio":
+        from .lmstudio_backend import LMStudioBackend
+
+        return LMStudioBackend(model=model, **kwargs)
     raise BackendError(f"unknown provider: {provider}")
