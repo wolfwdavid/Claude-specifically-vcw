@@ -64,9 +64,23 @@ pip install -e .
 export ANTHROPIC_API_KEY=...
 
 a11yeval                                            # all dimensions, default model
-a11yeval --model claude-sonnet-4-6 --out results/a11y_baseline.json
+a11yeval --target anthropic:claude-sonnet-4-6 --out results/a11y_baseline.json
 a11yeval --only refusal_parity,aac_handling        # subset
 ```
+
+Multi-model comparison (judge held fixed across targets):
+
+```bash
+a11yeval-compare \
+    --target anthropic:claude-sonnet-4-6 \
+    --target groq:llama-3.1-70b-versatile \
+    --target gemini:gemini-2.0-flash \
+    --judge  anthropic:claude-sonnet-4-6 \
+    --out-json results/cmp.json \
+    --out-md   results/cmp.md
+```
+
+Free backends: see [`../FREE_PATH.md`](../FREE_PATH.md).
 
 A full run is ~70 cases × (1 target call + ≤ 1 judge call). At
 `claude-sonnet-4-6` rates that is a few dollars; cheap enough to run on
