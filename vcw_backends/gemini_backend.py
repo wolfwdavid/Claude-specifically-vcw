@@ -11,6 +11,7 @@ import os
 
 import httpx
 
+from ._retry import post_with_retry
 from .base import Backend, BackendError
 
 
@@ -27,7 +28,7 @@ class GeminiBackend(Backend):
     def chat(self, system: str, user: str, max_tokens: int = 800) -> str:
         url = f"https://generativelanguage.googleapis.com/v1beta/models/{self.model}:generateContent"
         try:
-            r = httpx.post(
+            r = post_with_retry(
                 url,
                 params={"key": self.api_key},
                 json={
@@ -37,7 +38,6 @@ class GeminiBackend(Backend):
                 },
                 timeout=self.timeout,
             )
-            r.raise_for_status()
             data = r.json()
             return data["candidates"][0]["content"]["parts"][0]["text"].strip()
         except (httpx.HTTPError, KeyError, IndexError) as e:

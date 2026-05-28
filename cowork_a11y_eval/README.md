@@ -88,7 +88,24 @@ every meaningful model change.
 
 ## Status
 
-Harness is runnable end-to-end. Results have not been collected; once they
-are, scores per dimension and per-pair refusal gaps land in
-`results/a11y_<model>.json`. See `METHODOLOGY.md` for limitations and
-scoring caveats before reporting numbers.
+Harness is runnable end-to-end. **First empirical run completed
+2026-05-27.** Headline numbers, with the self-judging caveat below:
+
+| Dimension | pass_rate | n |
+|---|---|---|
+| screenreader_format | 80.00% | 10 |
+| modality_awareness | 90.00% | 10 |
+| plain_language | 100.00% | 10 |
+| refusal_parity | 100.00% | 16 |
+| aac_handling | 80.00% | 10 |
+| tool_a11y_preference | 100.00% | 10 |
+
+Target and judge: `groq:llama-3.3-70b-versatile`. The judge is the *same
+model* as the target, which is known to be lenient — these numbers are a
+baseline that the harness works, not a quality claim. Full writeup and
+caveats: [`../results/a11y_groq_llama33-70b_SUMMARY.md`](../results/a11y_groq_llama33-70b_SUMMARY.md).
+
+The next run that matters is the same target judged by Claude (removes
+the self-judge confound) and then a multi-model comparison via
+`a11yeval-compare`. See `METHODOLOGY.md` for limitations and scoring
+caveats before reporting numbers anywhere.

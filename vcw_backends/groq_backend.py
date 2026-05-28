@@ -11,6 +11,7 @@ import os
 
 import httpx
 
+from ._retry import post_with_retry
 from .base import Backend, BackendError
 
 
@@ -26,7 +27,7 @@ class GroqBackend(Backend):
 
     def chat(self, system: str, user: str, max_tokens: int = 800) -> str:
         try:
-            r = httpx.post(
+            r = post_with_retry(
                 "https://api.groq.com/openai/v1/chat/completions",
                 headers={"Authorization": f"Bearer {self.api_key}"},
                 json={
@@ -39,7 +40,6 @@ class GroqBackend(Backend):
                 },
                 timeout=self.timeout,
             )
-            r.raise_for_status()
             return r.json()["choices"][0]["message"]["content"].strip()
         except (httpx.HTTPError, KeyError, IndexError) as e:
             raise BackendError(f"groq call failed: {e}") from e
