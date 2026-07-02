@@ -17,11 +17,10 @@ Goal: run NEXT_EXPERIMENTS.md E1–E5 and fill the RESULTS PENDING tables in
   so E2 queries must disambiguate the ROLE.
 
 ## State at pause
-- [~] Registry export RUNNING: `trbench export-registry --root
-  C:\Users\Mkaru\Documents\Hello_World\hugginface_profile\ai_tools --out
-  data/registry.jsonl` (cwd = repo root). Writes the file only at the END of
-  the scan. If `data/registry.jsonl` doesn't exist on resume, re-run that
-  command (~10–20 min, I/O bound).
+- [x] Registry export DONE: `data/registry.jsonl` = 100,000 tools (the
+  corpus's other ~20 dirs don't match `<id>_<slug>` and are correctly
+  skipped by the loader). Uncommitted — data/ may be gitignored; check on
+  resume, and regenerate with `trbench export-registry` if missing.
 - [x] `scripts/generate_benchmark.py` — E2 sample/assemble halves (seed 257,
   quotas 9/40/40/40/40 tools × 3 queries ≈ 507 tasks; sibling context ±6 ids)
 - [x] `scripts/E2_PROMPTS.md` — exact drafting + review prompts (provenance)
